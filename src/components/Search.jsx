@@ -18,7 +18,7 @@ const Search = () => {
             </form>
         </span>
 
-        <UsersList search={search} />
+        <UsersList search={search}/>
     </div>
     
   )

@@ -6,8 +6,10 @@ import { useDispatch, useSelector } from "react-redux"
 import { setAllChat, setName, setOtherUser } from "../redux/userSlice"
 import { handleAllChat } from "../apiCalls/chat"
 
+
 export const ProtectedRoutes = ({ children }) => {
     const user = useSelector(state => state.userReducer.user)
+    const allChat = useSelector(state => state.userReducer.allChat)
     const dispatch = useDispatch()
     const navigate = useNavigate()
 
@@ -30,6 +32,8 @@ export const ProtectedRoutes = ({ children }) => {
             navigate("/signIn")
         }
     }
+
+    
 
     useEffect(() => {
         if (localStorage.getItem("token")) {
