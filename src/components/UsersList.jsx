@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux"
-import { setAllChat, setName, setOtherUser } from "../redux/userSlice"
+import { setAllChat, setSelectedChat } from "../redux/userSlice"
 import { handleCreatNewChat} from "../apiCalls/chat"
 import toast from "react-hot-toast"
 import { hideLoader, showLoader } from "../redux/loaderSlice"
@@ -10,15 +10,18 @@ const UsersList = ({search}) => {
     const allChat = useSelector(state => state.userReducer.allChat) 
     const currentUser = useSelector(state => state.userReducer.user)
 
+
+    // this send the neccessary data to the server to be able to create
+    // a new chat(the current user id and the selected user id)
   const createNewChat = async (members)=>{
         try {
             dispatch(showLoader())
             const response = await handleCreatNewChat(members)
-            console.log(response)
             dispatch(hideLoader())
 
             if(response.success){
-                dispatch(setAllChat([...allChat, response.result]))
+                dispatch(setAllChat([...allChat, response.data]))
+                dispatch(setSelectedChat(response.data))
                 toast.success(response.message)
             }
         } catch (error) {
@@ -41,6 +44,23 @@ const UsersList = ({search}) => {
         // ✅ when searching, show matching users
         return matchesSearch
     })
+
+    // this searches the allchat redux data to for the current users chat with the 
+    // currennt user and store the in a new state
+    const currentlyOpenedChat = async({currentUserId,userId})=>{
+        try {
+            const currentChat = allChat.find(chat =>
+                chat.members.includes(currentUserId) &&
+                chat.members.includes(userId)
+            )
+            if(currentChat){
+                dispatch(setSelectedChat(currentChat))
+            }
+        } catch (error) {
+            console.log(error)
+            toast.error(error)
+        }
+    }
 
     return (
         <div className=''>
@@ -78,7 +98,7 @@ const UsersList = ({search}) => {
 
                             {/* ✅ shows correct button based on chat existence */}
                             {existingChat ? (
-                                <button className='bg-green-500 text-white p-1 rounded-md'>
+                                <button onClick={()=>{currentlyOpenedChat({currentUserId:currentUser._id, userId:user._id})}} className='bg-green-500 text-white p-1 rounded-md'>
                                     Open Chat
                                 </button>
                             ) : (
