@@ -9,7 +9,7 @@ import { handleAllChat } from "../apiCalls/chat"
 
 export const ProtectedRoutes = ({ children }) => {
     const user = useSelector(state => state.userReducer.user)
-    const allChat = useSelector(state => state.userReducer.allChat)
+    // const allChat = useSelector(state => state.userReducer.allChat)
     const dispatch = useDispatch()
     const navigate = useNavigate()
 

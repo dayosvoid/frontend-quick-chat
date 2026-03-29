@@ -8,6 +8,7 @@ const UsersList = ({search}) => {
     const dispatch = useDispatch() 
     const otherUsers = useSelector(state => state.userReducer.otherUsers)
     const allChat = useSelector(state => state.userReducer.allChat) 
+    const selectedChat = useSelector(state => state.userReducer.selectedChat)
     const currentUser = useSelector(state => state.userReducer.user)
 
 
@@ -33,7 +34,7 @@ const UsersList = ({search}) => {
     // this is to filter using the search-bar or return users that has started a chat with 
     // our current user
     const userDetail = otherUsers.filter((user) => {
-        const hasExistingChat = allChat.some(chat => chat.members.includes(user._id))
+        const hasExistingChat = allChat.some(chat => chat.members.map(m => m._id).includes(user._id))
         const matchesSearch = 
             user.firstname.toLowerCase().includes(search.toLowerCase()) ||
             user.lastname.toLowerCase().includes(search.toLowerCase())
@@ -50,8 +51,8 @@ const UsersList = ({search}) => {
     const currentlyOpenedChat = async({currentUserId,userId})=>{
         try {
             const currentChat = allChat.find(chat =>
-                chat.members.includes(currentUserId) &&
-                chat.members.includes(userId)
+                chat.members.map(m => m._id).includes(currentUserId) &&
+                chat.members.map(m => m._id).includes(userId)
             )
             if(currentChat){
                 dispatch(setSelectedChat(currentChat))
@@ -72,10 +73,12 @@ const UsersList = ({search}) => {
                     const initials = fName[0] + lName[0]
 
                     // this logic return our searched or other logged user id
-                    const existingChat = allChat?.find(chat => chat.members.includes(user._id))
+                    const existingChat = allChat?.find(chat => chat.members.map(m => m._id).includes(user._id))
 
                     return (
-                        <div key={user._id} className='bg-white flex p-1 gap-1 w-full md:w-[80%] rounded-sm text-center font-semibold justify-between'>
+                        <div key={user._id} className={`bg-white flex p-1 gap-1 w-full md:w-[80%] rounded-sm text-center font-semibold justify-between
+                                ${existingChat?._id === selectedChat?._id ? "border-2 border-red-500" : ""}
+                            `}>
 
                             <div className='flex size-10 rounded-full bg-red-500 items-center justify-center overflow-hidden'>
                                 {user.profilePicture ? (
