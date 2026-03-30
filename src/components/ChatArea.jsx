@@ -1,23 +1,54 @@
 import { Send } from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux'
 import { hideLoader, showLoader } from '../redux/loaderSlice'
-import { handleSendMessage } from '../apiCalls/message'
+import { handleGetAllMessage, handleSendMessage } from '../apiCalls/message'
 import toast from 'react-hot-toast'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { setAllMessage } from '../redux/userSlice'
 // import { Send } from 'lucide-react'
 
 const ChatArea = () => {
     const dispatch = useDispatch()
     const selectedChat = useSelector(state => state.userReducer.selectedChat)
     const currentUser = useSelector(state => state.userReducer.user)
+    const allMessage = useSelector(state => state.userReducer.allMessage)
     
+    // stores the immdiatiate text from the text input field
     const [message,setMessage] = useState("")
-    
 
+
+    // handle get all message with a particular chat-id from the database and store them 
+    // in redux all message
+    const getAllMessages = async(chatId)=>{
+        try {
+            dispatch(showLoader())
+            const response = await handleGetAllMessage(chatId)
+             if (response.success){
+                dispatch(hideLoader())
+                toast.success(response.message)
+                console.log(response.data)
+                dispatch(setAllMessage(response.data))
+             }
+        } catch (error) {
+            dispatch(hideLoader())
+            toast.error(error.message)
+            console.log(error)
+        }
+    } 
+    
+    // to run the getAllMessage on everytime the seletedChat data changes
+    useEffect(()=>{
+        if(selectedChat){
+            // console.log(selectedChat)
+            getAllMessages(selectedChat._id)
+        }
+    },[selectedChat])
+// the handle message creation in the database and store and added the created message 
+// to the allMessage state
     const sendMessage =async(e)=>{
         e.preventDefault()
         const messageObject = {
-            chatId:selectedChat._id,
+            chatId:selectedChat._id.toString(),
             sender:currentUser._id,
             text:message
         }
@@ -29,6 +60,7 @@ const ChatArea = () => {
 
             if(response.success){
                 setMessage("")
+                dispatch(setAllMessage([...allMessage, response.data])) 
                 // console.log(123 + messageObject)
             }
 
@@ -51,7 +83,20 @@ const ChatArea = () => {
             <div className='w-full border border-b-2'></div>
 
             {/* chat messages */}
-            <div className='flex-1 overflow-y-auto'>Chat area</div>
+            <div className='flex-1 overflow-y-auto py-2'>
+                {
+                    allMessage.map((text)=> {
+
+                        const isCurrentUser = text.sender === currentUser._id
+
+                        return (<div key={text._id} className={`flex ${isCurrentUser ? "justify-end" : "justify-start"}`}>
+                            <div className={`p-2 rounded-lg max-w-[60%] ${isCurrentUser ? "bg-white text-black" : "bg-red-600 text-white"}`}>
+                                {text.text}
+                            </div>
+                        </div>)
+                    })
+                }
+            </div>
 
             {/* input — pushed to bottom */}
             <div className='mt-auto'>
