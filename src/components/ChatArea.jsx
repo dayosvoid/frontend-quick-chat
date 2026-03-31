@@ -5,6 +5,7 @@ import { handleGetAllMessage, handleSendMessage } from '../apiCalls/message'
 import toast from 'react-hot-toast'
 import { useEffect, useState } from 'react'
 import { setAllMessage } from '../redux/userSlice'
+import moment from "moment"
 // import { Send } from 'lucide-react'
 
 const ChatArea = () => {
@@ -83,20 +84,24 @@ const ChatArea = () => {
             <div className='w-full border border-b-2'></div>
 
             {/* chat messages */}
-            <div className='flex-1 overflow-y-auto py-2'>
-                {
-                    allMessage.map((text)=> {
+<div className='flex-1 overflow-y-auto w-full mx-auto py-2'>
+    {allMessage.map((text) => {
+        const isCurrentUser = text.sender.toString() === currentUser._id.toString()
 
-                        const isCurrentUser = text.sender === currentUser._id
-
-                        return (<div key={text._id} className={`flex ${isCurrentUser ? "justify-end" : "justify-start"}`}>
-                            <div className={`p-2 rounded-lg max-w-[60%] ${isCurrentUser ? "bg-white text-black" : "bg-red-600 text-white"}`}>
-                                {text.text}
-                            </div>
-                        </div>)
-                    })
-                }
+        return (
+            <div key={text._id} className={`flex ${isCurrentUser ? "justify-end" : "justify-start"}`}>
+                <div className=''>
+                    <div className={`p-2 my-1 rounded-lg ${isCurrentUser ? "bg-white text-black text-end" : "bg-red-600 text-white"}`}>
+                        {text.text}
+                    </div>
+                    <div className={`text-md ${isCurrentUser ? "text-end" : "text-start"}`}>
+                        {moment(text.createdAt).format("hh:mm A")}
+                    </div>
+                </div>
             </div>
+        )
+    })}
+</div>
 
             {/* input — pushed to bottom */}
             <div className='mt-auto'>

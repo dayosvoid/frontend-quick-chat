@@ -11,9 +11,7 @@ const Sidebar = () => {
                         <Search />
                     </div>
                 {/* <UsersList /> */}
-            </div>
-
-            
+            </div> 
         </div>
     )
 }
