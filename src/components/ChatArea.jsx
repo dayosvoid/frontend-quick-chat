@@ -6,73 +6,58 @@ import toast from 'react-hot-toast'
 import { useEffect, useState } from 'react'
 import { setAllMessage } from '../redux/userSlice'
 import moment from "moment"
-// import { Send } from 'lucide-react'
 
 const ChatArea = () => {
     const dispatch = useDispatch()
     const selectedChat = useSelector(state => state.userReducer.selectedChat)
     const currentUser = useSelector(state => state.userReducer.user)
     const allMessage = useSelector(state => state.userReducer.allMessage)
-    
-    // stores the immdiatiate text from the text input field
-    const [message,setMessage] = useState("")
+    const [message, setMessage] = useState("")
 
-
-    // handle get all message with a particular chat-id from the database and store them 
-    // in redux all message
-    const getAllMessages = async(chatId)=>{
+    const getAllMessages = async (chatId) => {
         try {
             dispatch(showLoader())
             const response = await handleGetAllMessage(chatId)
-             if (response.success){
-                dispatch(hideLoader())
-                toast.success(response.message)
-                console.log(response.data)
+            if (response.success) {
                 dispatch(setAllMessage(response.data))
-             }
+            }
         } catch (error) {
-            dispatch(hideLoader())
             toast.error(error.message)
-            console.log(error)
+        } finally {
+            dispatch(hideLoader())
         }
-    } 
-    
-    // to run the getAllMessage on everytime the seletedChat data changes
-    useEffect(()=>{
-        if(selectedChat){
-            // console.log(selectedChat)
+    }
+
+    useEffect(() => {
+        if (selectedChat) {
             getAllMessages(selectedChat._id)
         }
-    },[selectedChat])
-// the handle message creation in the database and store and added the created message 
-// to the allMessage state
-    const sendMessage =async(e)=>{
+    }, [selectedChat])
+
+    const sendMessage = async (e) => {
         e.preventDefault()
         const messageObject = {
-            chatId:selectedChat._id.toString(),
-            sender:currentUser._id,
-            text:message
+            chatId: selectedChat._id.toString(),
+            sender: currentUser._id,
+            text: message
         }
         try {
             dispatch(showLoader())
-            const response =await handleSendMessage(messageObject)
-            console.log({response})
-            dispatch(hideLoader())
-
-            if(response.success){
+            const response = await handleSendMessage(messageObject)
+            if (response.success) {
                 setMessage("")
-                dispatch(setAllMessage([...allMessage, response.data])) 
-                // console.log(123 + messageObject)
+                dispatch(setAllMessage([...allMessage, response.data]))
             }
-
         } catch (error) {
             toast.error(error.message)
-            dispatch(hideLoader())     
+        } finally {
+            dispatch(hideLoader()) 
         }
     }
+
     return (
-        <div className='bg-red-400 m-2 rounded-2xl p-4 w-full h-screen flex flex-col'>
-            
+        <div className='bg-red-400 m-2 rounded-2xl p-2 w-full h-[calc(100vh-1rem)] flex-col hidden md:flex'>
+
             {/* header */}
             <div className='flex justify-end h-10'>
                 <h2 className='text-red-100 text-2xl font-bold'>
@@ -84,26 +69,27 @@ const ChatArea = () => {
             <div className='w-full border border-b-2'></div>
 
             {/* chat messages */}
-<div className='flex-1 overflow-y-auto w-full mx-auto py-2'>
-    {allMessage.map((text) => {
-        const isCurrentUser = text.sender.toString() === currentUser._id.toString()
+            <div className='flex-1 overflow-y-auto py-2 scrollbar-thin scrollbar-thumb-red-600 scrollbar-track-red-300
+            '> 
+                {allMessage.map((text) => {
+                    const isCurrentUser = text.sender.toString() === currentUser._id.toString()
 
-        return (
-            <div key={text._id} className={`flex ${isCurrentUser ? "justify-end" : "justify-start"}`}>
-                <div className=''>
-                    <div className={`p-2 my-1 rounded-lg ${isCurrentUser ? "bg-white text-black text-end" : "bg-red-600 text-white"}`}>
-                        {text.text}
-                    </div>
-                    <div className={`text-md ${isCurrentUser ? "text-end" : "text-start"}`}>
-                        {moment(text.createdAt).format("hh:mm A")}
-                    </div>
-                </div>
+                    return (
+                        <div key={text._id} className={`flex ${isCurrentUser ? "justify-end" : "justify-start"}`}>
+                            <div>
+                                <div className={`p-2 my-1 rounded-lg ${isCurrentUser ? "bg-white text-black text-end mr-1 ml-25" : "bg-red-600 text-white mr-25"}`}>
+                                    {text.text}
+                                </div>
+                                <div className={`text-xs ${isCurrentUser ? "text-end" : "text-start"}`}>
+                                    {moment(text.createdAt).format("hh:mm A")}
+                                </div>
+                            </div>
+                        </div>
+                    )
+                })}
             </div>
-        )
-    })}
-</div>
 
-            {/* input — pushed to bottom */}
+            {/* input */}
             <div className='mt-auto'>
                 <form onSubmit={sendMessage} className='flex justify-between w-full border rounded-full py-1 px-2'>
                     <input
@@ -111,10 +97,11 @@ const ChatArea = () => {
                         placeholder='Type a message'
                         className='w-full bg-transparent focus:outline-none px-2'
                         value={message}
-                        onChange={(e)=>setMessage(e.target.value)}
+                        onChange={(e) => setMessage(e.target.value)}
                     />
                     <button type='submit'><Send /></button>
                 </form>
+               
             </div>
 
         </div>

@@ -8,7 +8,7 @@ const Header = ({firstname,lastname}) => {
     const initials = fName[0]+lName[0]
     
   return (
-    <div className=' bg-red-200 border-b-2 border-red-600 text-nowrap'>
+    <div className=' bg-red-200 border-b-2 border-red-900 text-nowrap w-full'>
       <div className='flex justify-between mx-auto w-11/12  py-2 h-full items-center '>
         <div className='flex gap-2 w-full'>
             <MessageSquare/>

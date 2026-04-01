@@ -23,6 +23,7 @@ export const ProtectedRoutes = ({ children }) => {
                 dispatch(setName(response.result))
                 dispatch(setOtherUser(otherUsersResponse.result))
                 dispatch(setAllChat(chatResponse.result))
+
                 console.log(chatResponse)
             } else {
                 navigate("/signIn")
@@ -44,7 +45,7 @@ export const ProtectedRoutes = ({ children }) => {
     }, [])
 
     return (
-        <div>
+        <div className="">
             <Header
                 firstname={user?.firstname ?? "Guest"}
                 lastname={user?.lastname ?? "User"}

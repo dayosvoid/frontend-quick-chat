@@ -5,8 +5,8 @@ import { useSelector } from 'react-redux'
 const Sidebar = () => {
    
     return (
-        <div className='h-screen sm:max-w-[40%] bg-red-200'>
-            <div className='flex flex-col gap-2 '>
+        <div className='h-screen w-full md:max-w-[40%] bg-red-200 '>
+            <div className='flex flex-col gap-2 py-1 '>
                     <div>
                         <Search />
                     </div>

@@ -63,20 +63,29 @@ const UsersList = ({search}) => {
         }
     }
 
+    // this is basically to get the lastMessage data would use the chatId to to get the selectedChat
+    const getLastMessage = (chatId) =>{
+        const lastMessage = allChat?.find((chat)=>chat._id === chatId)
+        return lastMessage ? chat?.lastMessage : ""
+    }
+
     return (
-        <div className=''>
-            <div className='flex flex-col items-center gap-3 px-2 text-nowrap'>
+        <div className='w-full'>
+            <div className='flex flex-col items-center gap-3 text-nowrap'>
                 {userDetail?.map((user) => {
+                        
 
                     const fName = user.firstname.charAt(0).toUpperCase() + user.firstname.slice(1).toLowerCase()
                     const lName = user.lastname.charAt(0).toUpperCase() + user.lastname.slice(1).toLowerCase()
                     const initials = fName[0] + lName[0]
 
-                    // this logic return our searched or other logged user id
+                    // this logic get all the chat our user has created
                     const existingChat = allChat?.find(chat => chat.members.map(m => m._id).includes(user._id))
 
+                    const lastMsgText = allChat?.lastMessage?.text || null;
+
                     return (
-                        <div key={user._id} className={`bg-white flex p-1 gap-1 w-full md:w-[80%] rounded-sm text-center font-semibold justify-between
+                        <div key={user._id} className={`bg-white flex p-1 gap-1 w-11/12  rounded-sm text-center font-semibold justify-between
                                 ${existingChat?._id === selectedChat?._id ? "border-2 border-red-500" : ""}
                             `}>
 
@@ -96,10 +105,10 @@ const UsersList = ({search}) => {
 
                             <div className='w-[50%] overflow-hidden'>
                                 <p>{fName} {lName}</p>
-                                <p>{user.email}</p>
+                                <p>{lastMsgText? lastMsgText : currentUser.email}</p>
                             </div>
 
-                            {/* ✅ shows correct button based on chat existence */}
+                            {/* shows correct button based on chat existence */}
                             {existingChat ? (
                                 <button onClick={()=>{currentlyOpenedChat({currentUserId:currentUser._id, userId:user._id})}} className='bg-green-500 text-white p-1 rounded-md'>
                                     Open Chat

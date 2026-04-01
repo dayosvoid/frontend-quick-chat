@@ -5,7 +5,7 @@ import ChatArea from '../components/ChatArea'
 
 const Home = () => {
   return (
-    <div className='flex gap-2'>
+    <div className='container w-11/12 mx-auto'>
       {/* <Header/> */}
       <Sidebar/>
       <ChatArea/>
