@@ -1,123 +1,91 @@
 import { useDispatch, useSelector } from "react-redux"
 import { setAllChat, setSelectedChat } from "../redux/userSlice"
-import { handleCreatNewChat} from "../apiCalls/chat"
+import { handleCreatNewChat } from "../apiCalls/chat"
 import toast from "react-hot-toast"
 import { hideLoader, showLoader } from "../redux/loaderSlice"
+import moment from "moment"
 
-const UsersList = ({search}) => {
-    const dispatch = useDispatch() 
+const UsersList = ({ search }) => {
+    const dispatch = useDispatch()
     const otherUsers = useSelector(state => state.userReducer.otherUsers)
-    const allChat = useSelector(state => state.userReducer.allChat) 
+    const allChat = useSelector(state => state.userReducer.allChat)
     const selectedChat = useSelector(state => state.userReducer.selectedChat)
     const currentUser = useSelector(state => state.userReducer.user)
 
-
-    // this send the neccessary data to the server to be able to create
-    // a new chat(the current user id and the selected user id)
-  const createNewChat = async (members)=>{
+    const createNewChat = async (members) => {
         try {
             dispatch(showLoader())
             const response = await handleCreatNewChat(members)
-            dispatch(hideLoader())
-
-            if(response.success){
+            if (response.success) {
                 dispatch(setAllChat([...allChat, response.data]))
                 dispatch(setSelectedChat(response.data))
                 toast.success(response.message)
             }
         } catch (error) {
+            toast.error(error.message) // ✅ passing error message
+        } finally {
             dispatch(hideLoader())
-            toast.error()
         }
     }
 
-    // this is to filter using the search-bar or return users that has started a chat with 
-    // our current user
     const userDetail = otherUsers.filter((user) => {
         const hasExistingChat = allChat.some(chat => chat.members.map(m => m._id).includes(user._id))
-        const matchesSearch = 
+        const matchesSearch =
             user.firstname.toLowerCase().includes(search.toLowerCase()) ||
             user.lastname.toLowerCase().includes(search.toLowerCase())
 
-        // ✅ only show users with existing chats when search is empty
         if (!search) return hasExistingChat
-
-        // ✅ when searching, show matching users
         return matchesSearch
     })
 
-    // this searches the allchat redux data to for the current users chat with the 
-    // currennt user and store the in a new state
-    const currentlyOpenedChat = async({currentUserId,userId})=>{
-        try {
-            const currentChat = allChat.find(chat =>
-                chat.members.map(m => m._id).includes(currentUserId) &&
-                chat.members.map(m => m._id).includes(userId)
-            )
-            if(currentChat){
-                dispatch(setSelectedChat(currentChat))
-            }
-        } catch (error) {
-            console.log(error)
-            toast.error(error)
+    const currentlyOpenedChat = ({ currentUserId, userId }) => {
+        const currentChat = allChat.find(chat =>
+            chat.members.map(m => m._id).includes(currentUserId) &&
+            chat.members.map(m => m._id).includes(userId)
+        )
+        if (currentChat) {
+            dispatch(setSelectedChat(currentChat))
+        } else {
+            createNewChat([currentUserId, userId])
         }
-    }
-
-    // this is basically to get the lastMessage data would use the chatId to to get the selectedChat
-    const getLastMessage = (chatId) =>{
-        const lastMessage = allChat?.find((chat)=>chat._id === chatId)
-        return lastMessage ? chat?.lastMessage : ""
     }
 
     return (
         <div className='w-full'>
-            <div className='flex flex-col items-center gap-3 text-nowrap'>
+            <div className='w-full flex flex-col items-center text-nowrap'>
                 {userDetail?.map((user) => {
-                        
-
                     const fName = user.firstname.charAt(0).toUpperCase() + user.firstname.slice(1).toLowerCase()
                     const lName = user.lastname.charAt(0).toUpperCase() + user.lastname.slice(1).toLowerCase()
                     const initials = fName[0] + lName[0]
 
-                    // this logic get all the chat our user has created
                     const existingChat = allChat?.find(chat => chat.members.map(m => m._id).includes(user._id))
-
-                    const lastMsgText = allChat?.lastMessage?.text || null;
+                    const lastMessageText = existingChat?.lastMessage?.text // ✅ safe access
 
                     return (
-                        <div key={user._id} className={`bg-white flex p-1 gap-1 w-11/12  rounded-sm text-center font-semibold justify-between
-                                ${existingChat?._id === selectedChat?._id ? "border-2 border-red-500" : ""}
+                        <div
+                            onClick={() => currentlyOpenedChat({ currentUserId: currentUser._id, userId: user._id })}
+                            key={user._id}
+                            className={`bg-red-200 cursor-pointer border-b-2 flex py-2 px-1 gap-1 w-full text-start font-semibold
+                                ${existingChat?._id === selectedChat?._id ? "bg-red-300" : ""}
                             `}>
 
-                            <div className='flex size-10 rounded-full bg-red-500 items-center justify-center overflow-hidden'>
+                            <div className='w-20 flex rounded-full bg-red-500 items-center justify-center overflow-hidden'>
                                 {user.profilePicture ? (
-                                    <img
-                                        src={user.profilePicture}
-                                        alt="Profile"
-                                        className="h-full w-full object-cover"
-                                    />
+                                    <img src={user.profilePicture} alt="Profile" className="h-full w-full object-cover" />
                                 ) : (
-                                    <span className='text-white text-xl font-bold mb-0.5'>
-                                        {initials}
-                                    </span>
+                                    <span className='text-white text-xl font-bold mb-0.5'>{initials}</span>
                                 )}
                             </div>
 
-                            <div className='w-[50%] overflow-hidden'>
+                            <div className='w-full overflow-hidden'>
                                 <p>{fName} {lName}</p>
-                                <p>{lastMsgText? lastMsgText : currentUser.email}</p>
+                                {/* ✅ safe check before slicing */}
+                                <p>{lastMessageText ? lastMessageText.slice(0, 25) + "..." : currentUser.email}</p>
                             </div>
 
-                            {/* shows correct button based on chat existence */}
-                            {existingChat ? (
-                                <button onClick={()=>{currentlyOpenedChat({currentUserId:currentUser._id, userId:user._id})}} className='bg-green-500 text-white p-1 rounded-md'>
-                                    Open Chat
-                                </button>
-                            ) : (
-                                <button onClick={(e) => {createNewChat([currentUser._id, user._id])}} className='bg-red-500 text-white p-1 rounded-md'>
-                                    Start Chat
-                                </button>
-                            )}
+                            <div className="w-25 text-end justify-end text-[12px] flex">
+                                <p>{existingChat ? moment(existingChat.updatedAt).fromNow() : ""}</p> {/* ✅ updatedAt is more accurate than createdAt */}
+                            </div>
                         </div>
                     )
                 })}

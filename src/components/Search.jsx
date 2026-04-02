@@ -10,7 +10,7 @@ const Search = () => {
     e.preventDefault()
   }
   return (
-    <div className='w-11/12 mx-auto flex flex-col gap-2'>
+    <div className='w-full mx-auto flex flex-col gap-2'>
         <span className='w-full flex justify-center'>
             <form onSubmit={handleSearch} action="" className='bg-white w-11/12 border border-gray-800 flex  justify-between rounded-full px-2 py-1'>
                 <input value={search} onChange={(e)=>setSearch(e.target.value)}  type="text" className=' w-full focus:outline-0' />
