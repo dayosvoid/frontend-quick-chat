@@ -20,3 +20,14 @@ export const handleCreatNewChat = async(members)=>{
         return { success: false, message: error.message }
     }
 }
+
+export const handleChatUpdate = async (chatId) => {
+    try {
+        console.log(chatId)
+        const response = await axiosInstance.post("/api/chat/updateChat", { chatId }) 
+        console.log(response.data)
+        return response.data 
+    } catch (error) {
+        return { success: false, message: error.message }
+    }
+}

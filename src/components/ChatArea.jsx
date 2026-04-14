@@ -1,11 +1,12 @@
-import { Send } from 'lucide-react'
+import { Send, ArrowLeft } from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux'
 import { hideLoader, showLoader } from '../redux/loaderSlice'
 import { handleGetAllMessage, handleSendMessage } from '../apiCalls/message'
 import toast from 'react-hot-toast'
 import { useEffect, useState } from 'react'
-import { setAllMessage } from '../redux/userSlice'
+import { setAllMessage, setSelectedChat } from '../redux/userSlice'
 import moment from "moment"
+import { handleChatUpdate } from '../apiCalls/chat'
 
 const ChatArea = () => {
     const dispatch = useDispatch()
@@ -28,9 +29,22 @@ const ChatArea = () => {
         }
     }
 
+    const updateAllMessages = async (chatId) => {
+        try {
+            dispatch(showLoader())
+            await handleChatUpdate(chatId)
+        } catch (error) {
+            toast.error(error.message)
+        } finally {
+            dispatch(hideLoader())
+        }
+    }
+
     useEffect(() => {
         if (selectedChat) {
+            updateAllMessages(selectedChat._id)
             getAllMessages(selectedChat._id)
+            
         }
     }, [selectedChat])
 
@@ -51,29 +65,33 @@ const ChatArea = () => {
         } catch (error) {
             toast.error(error.message)
         } finally {
-            dispatch(hideLoader()) 
+            dispatch(hideLoader())
         }
     }
 
+
+
     return (
-        <div className='bg-red-400 m-2 rounded-2xl p-2 w-full h-[calc(100vh-1rem)] flex-col hidden md:flex'>
+        <div className={`bg-red-400 ${!selectedChat ? "hidden md:flex" : "flex"} bg-red-400 m-2 rounded-2xl p-2 w-full h-[calc(100vh-1rem)] flex flex-col`}>
 
             {/* header */}
-            <div className='flex justify-end h-10'>
+            <div className='flex items-center justify-between h-10'>
+                {/* ✅ back button on mobile to go back to sidebar */}
+                <button
+                    className='md:hidden'
+                    onClick={() => dispatch(setSelectedChat(null))}>
+                    <ArrowLeft className='text-white' />
+                </button>
                 <h2 className='text-red-100 text-2xl font-bold'>
-                    {selectedChat ?
-                        selectedChat?.members[1]?.firstname + " " + selectedChat?.members[1]?.lastname
-                        : null}
+                    {selectedChat?selectedChat?.members[1]?.firstname + " " + selectedChat?.members[1]?.lastname : ""}
                 </h2>
             </div>
             <div className='w-full border border-b-2'></div>
 
             {/* chat messages */}
-            <div className='flex-1 overflow-y-auto py-2 scrollbar-thin scrollbar-thumb-red-600 scrollbar-track-red-300
-            '> 
+            <div className='flex-1 overflow-y-auto py-2 scrollbar-thin scrollbar-thumb-red-600 scrollbar-track-red-300'>
                 {allMessage.map((text) => {
                     const isCurrentUser = text.sender.toString() === currentUser._id.toString()
-
                     return (
                         <div key={text._id} className={`flex ${isCurrentUser ? "justify-end" : "justify-start"}`}>
                             <div>
@@ -91,7 +109,7 @@ const ChatArea = () => {
 
             {/* input */}
             <div className='mt-auto'>
-                <form onSubmit={sendMessage} className='flex justify-between w-full border rounded-full py-1 px-2'>
+                <form onSubmit={sendMessage} className='bg-red-200 flex justify-between w-full border rounded-full py-1 px-2'>
                     <input
                         type="text"
                         placeholder='Type a message'
@@ -101,9 +119,7 @@ const ChatArea = () => {
                     />
                     <button type='submit'><Send /></button>
                 </form>
-               
             </div>
-
         </div>
     )
 }
