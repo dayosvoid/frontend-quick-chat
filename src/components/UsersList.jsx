@@ -50,9 +50,7 @@ const UsersList = ({ search }) => {
         }
     }
 
-    // const getUnreadMessageNubmer = ()=>{
-    //     const message = allChat.find(chat => chat.members.map(m => m._id).includes(currentUserId))
-    // }
+    
     return (
         <div className='w-full'>
             <div className='w-full flex flex-col items-center text-nowrap'>
