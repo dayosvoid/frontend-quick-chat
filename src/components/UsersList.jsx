@@ -50,7 +50,18 @@ const UsersList = ({ search }) => {
         }
     }
 
-    
+    const getUnReadCount = (userId) => {
+    // Find the chat where BOTH the current user and the list user are members
+    const chat = allChat.find(c => 
+        c.members.some(m => m._id === currentUser._id) && 
+        c.members.some(m => m._id === userId)
+    );
+
+    if(chat.members[0] !== currentUser._id){
+        return chat?.unreadMessageCount || 0;
+    }
+    return ""
+};
     return (
         <div className='w-full'>
             <div className='w-full flex flex-col items-center text-nowrap'>
@@ -84,9 +95,20 @@ const UsersList = ({ search }) => {
                                 <p>{lastMessageText ? lastMessageText.slice(0, 25) + "..." : currentUser.email}</p>
                             </div>
 
-                            <div className="w-25 text-end justify-end text-[12px] flex">
-                                <p>{existingChat ? moment(existingChat.updatedAt).fromNow() : ""}</p> {/* ✅ updatedAt is more accurate than createdAt */}
-                            </div>
+                                       {/* Time and Unread Badge Section */}
+                                <div className="flex flex-col items-end justify-between min-w-[60px]">
+                                    {/* The Day/Time */}
+                                    <p className="text-[10px] text-gray-500">
+                                        {existingChat ? moment(existingChat.updatedAt).fromNow(true) : ""}
+                                    </p>
+
+                                    {/* The Unread Count Badge */}
+                                    {getUnReadCount(user._id) > 0 && (
+                                        <div className="bg-red-300 text-black text-[10px] rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                                            {getUnReadCount(user._id)}
+                                        </div>
+                                    )}
+                                </div>
                         </div>
                     )
                 })}
